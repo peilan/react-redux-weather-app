@@ -1,11 +1,15 @@
 import {createStore, applyMiddleware} from 'redux'
 import reducer from './reducer'
 import logger from 'redux-logger'
-import thunk from 'redux-thunk'
+import createSagaMiddleware from 'redux-saga'
+import rootSaga from './rootSaga'
 
-const enchancer = applyMiddleware(thunk, logger)
+const sagaMiddleware = createSagaMiddleware()
+const enchancer = applyMiddleware(sagaMiddleware, logger)
 
 const store = createStore(reducer, enchancer)
+
+sagaMiddleware.run(rootSaga)
 
 window.store = store
 

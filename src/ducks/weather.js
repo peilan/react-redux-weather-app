@@ -1,6 +1,7 @@
+import {put, takeEvery, all} from 'redux-saga/effects'
 import {appName} from '../config' 
 import {Record, OrderedMap} from 'immutable'
-import { fetchWeather } from './api';
+import {fetchWeather} from './api';
 
 export const moduleName = 'weather'
 
@@ -14,7 +15,6 @@ const CityRecord = Record({
   weather: {}
 })
 
-export const ADD_CITY = `${appName}/${moduleName}/ADD_CITY`
 export const DELETE_CITY = `${appName}/${moduleName}/DELETE_CITY`
 export const FETCH_WEATHER_REQUEST = `${appName}/${moduleName}/FETCH_WEATHER_REQUEST`
 export const FETCH_WEATHER_SUCCESS = `${appName}/${moduleName}/FETCH_WEATHER_SUCCESS`
@@ -25,8 +25,12 @@ export default function reducer(state = new ReducerState(), action) {
   const {type, payload} = action
 
   switch (type) {
-    case ADD_CITY:
-      return state.setIn(['entities', payload.name], new CityRecord(payload))
+    case FETCH_WEATHER_REQUEST:
+      return state.set('loading', true)
+    case FETCH_WEATHER_SUCCESS:
+      return state
+        .set('loading', false)
+        .setIn(['entities', payload.name], new CityRecord(payload))
     case DELETE_CITY:
       return state.set('entities', state.get('entities').delete(payload))
     default:
@@ -35,19 +39,9 @@ export default function reducer(state = new ReducerState(), action) {
 }
 
 export function addCity({name}) {
-  return dispatch => {
-    fetchWeather(name).then(weather => {
-      dispatch({
-        type: ADD_CITY,
-        payload: {
-          name,
-          weather
-        }
-      })
-    })
-    .catch(err => {
-      console.error(err)
-    })
+  return {
+    type: FETCH_WEATHER_REQUEST,
+    payload: {name}
   }
 }
 
@@ -56,4 +50,28 @@ export function deleteCity(name) {
     type: DELETE_CITY,
     payload: name
   }
+}
+
+function * fetchWeatherSaga(action) {
+  const {name} = action.payload
+  try {
+    const weather = yield fetchWeather(name)
+
+    yield put({
+      type: FETCH_WEATHER_SUCCESS,
+      payload: {
+        weather,
+        name
+      }
+    })
+  }
+  catch (e) {
+    console.error(e)
+  }
+}
+
+export const saga = function * () {
+  yield all([
+    takeEvery(FETCH_WEATHER_REQUEST, fetchWeatherSaga),
+  ])
 }
