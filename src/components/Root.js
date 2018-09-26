@@ -1,8 +1,14 @@
 import React, {Component} from 'react'
 import CityAdding from './CityAdding'
 import List from './List'
+import {connect} from 'react-redux'
+import {getWeatherByCurrentLocation} from '../ducks/weather'
 
 class Root extends Component {
+  componentDidMount() {
+    this.props.getWeatherByCurrentLocation()
+  }
+
   render() {
     return (
       <div>
@@ -16,4 +22,4 @@ class Root extends Component {
   }
 }
 
-export default Root
+export default connect(null, {getWeatherByCurrentLocation})(Root)

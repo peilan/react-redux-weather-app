@@ -1,7 +1,8 @@
 import {put, takeEvery, all} from 'redux-saga/effects'
 import {appName} from '../config' 
 import {Record, OrderedMap} from 'immutable'
-import {fetchWeather} from './api';
+import {fetchWeatherByName, fetchWeatherByCoordinates} from './api';
+import {getCurrentPosition} from './utils'
 
 export const moduleName = 'weather'
 
@@ -18,6 +19,8 @@ const CityRecord = Record({
 export const DELETE_CITY = `${appName}/${moduleName}/DELETE_CITY`
 export const FETCH_WEATHER_REQUEST = `${appName}/${moduleName}/FETCH_WEATHER_REQUEST`
 export const FETCH_WEATHER_SUCCESS = `${appName}/${moduleName}/FETCH_WEATHER_SUCCESS`
+export const GET_LOCATION_START = `${appName}/${moduleName}/GET_LOCATION_START`
+export const GET_LOCATION_END = `${appName}/${moduleName}/GET_LOCATION_END`
 
 export const citiesSelector = state => state[moduleName].entities.valueSeq().toJS()
 
@@ -38,24 +41,30 @@ export default function reducer(state = new ReducerState(), action) {
   } 
 }
 
-export function addCity({name}) {
+export const addCity = ({name}) => {
   return {
     type: FETCH_WEATHER_REQUEST,
     payload: {name}
   }
 }
 
-export function deleteCity(name) {
+export const deleteCity = (name) => {
   return {
     type: DELETE_CITY,
     payload: name
   }
 }
 
+export const getWeatherByCurrentLocation = () => {
+  return {
+    type: GET_LOCATION_START
+  }
+} 
+
 function * fetchWeatherSaga(action) {
   const {name} = action.payload
   try {
-    const weather = yield fetchWeather(name)
+    const weather = yield fetchWeatherByName(name)
 
     yield put({
       type: FETCH_WEATHER_SUCCESS,
@@ -70,8 +79,27 @@ function * fetchWeatherSaga(action) {
   }
 }
 
+function * getLocationSaga(action) {
+  try {
+    const location = yield getCurrentPosition()
+    const weather = yield fetchWeatherByCoordinates(location)
+    
+    yield put({
+      type: FETCH_WEATHER_SUCCESS,
+      payload: {
+        weather,
+        name: weather.name
+      }
+    })
+  }
+  catch (e) {
+    console.error(e)
+  }
+}
+
 export const saga = function * () {
   yield all([
     takeEvery(FETCH_WEATHER_REQUEST, fetchWeatherSaga),
+    takeEvery(GET_LOCATION_START, getLocationSaga)
   ])
 }
