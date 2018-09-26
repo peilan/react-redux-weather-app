@@ -2,11 +2,15 @@ import React, {Component} from 'react'
 import CityAdding from './CityAdding'
 import List from './List'
 import {connect} from 'react-redux'
-import {getWeatherByCurrentLocation} from '../ducks/weather'
+import {
+  getWeatherByCurrentLocation,
+  getFromLocalStorage
+} from '../ducks/weather'
 
 class Root extends Component {
   componentDidMount() {
     this.props.getWeatherByCurrentLocation()
+    this.props.getFromLocalStorage()
   }
 
   render() {
@@ -22,4 +26,7 @@ class Root extends Component {
   }
 }
 
-export default connect(null, {getWeatherByCurrentLocation})(Root)
+export default connect(null, {
+  getWeatherByCurrentLocation,
+  getFromLocalStorage
+})(Root)

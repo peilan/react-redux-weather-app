@@ -1,8 +1,9 @@
 import {put, takeEvery, all} from 'redux-saga/effects'
 import {appName} from '../config' 
 import {Record, OrderedMap} from 'immutable'
-import {fetchWeatherByName, fetchWeatherByCoordinates} from './api';
+import {fetchWeatherByName, fetchWeatherByCoordinates, fetchWeatherByIds} from './api';
 import {getCurrentPosition} from './utils'
+import {getCities, saveCity} from './localStorage'
 
 export const moduleName = 'weather'
 
@@ -17,10 +18,14 @@ const CityRecord = Record({
 })
 
 export const DELETE_CITY = `${appName}/${moduleName}/DELETE_CITY`
-export const FETCH_WEATHER_REQUEST = `${appName}/${moduleName}/FETCH_WEATHER_REQUEST`
-export const FETCH_WEATHER_SUCCESS = `${appName}/${moduleName}/FETCH_WEATHER_SUCCESS`
+export const FETCH_WEATHER_CITY_REQUEST = `${appName}/${moduleName}/FETCH_WEATHER_CITY_REQUEST`
+export const FETCH_WEATHER_CITY_SUCCESS = `${appName}/${moduleName}/FETCH_WEATHER_CITY_SUCCESS`
+export const FETCH_WEATHER_CITIES_REQUEST = `${appName}/${moduleName}/FETCH_WEATHER_CITIES_REQUEST`
+export const FETCH_WEATHER_CITIES_SUCCESS = `${appName}/${moduleName}/FETCH_WEATHER_CITIES_SUCCESS`
 export const GET_LOCATION_START = `${appName}/${moduleName}/GET_LOCATION_START`
 export const GET_LOCATION_END = `${appName}/${moduleName}/GET_LOCATION_END`
+export const GET_CITIES_FROM_LOCAL_STORAGE = `${appName}/${moduleName}/GET_CITIES_FROM_LOCAL_STORAGE`
+
 
 export const citiesSelector = state => state[moduleName].entities.valueSeq().toJS()
 
@@ -28,12 +33,17 @@ export default function reducer(state = new ReducerState(), action) {
   const {type, payload} = action
 
   switch (type) {
-    case FETCH_WEATHER_REQUEST:
+    case FETCH_WEATHER_CITIES_REQUEST:
+    case FETCH_WEATHER_CITY_REQUEST:
       return state.set('loading', true)
-    case FETCH_WEATHER_SUCCESS:
+    case FETCH_WEATHER_CITY_SUCCESS:
       return state
         .set('loading', false)
         .setIn(['entities', payload.name], new CityRecord(payload))
+    case FETCH_WEATHER_CITIES_SUCCESS:
+      return state
+        .set('loading', false)
+        .set('entities', new OrderedMap(payload))
     case DELETE_CITY:
       return state.set('entities', state.get('entities').delete(payload))
     default:
@@ -43,7 +53,7 @@ export default function reducer(state = new ReducerState(), action) {
 
 export const addCity = ({name}) => {
   return {
-    type: FETCH_WEATHER_REQUEST,
+    type: FETCH_WEATHER_CITY_REQUEST,
     payload: {name}
   }
 }
@@ -61,13 +71,21 @@ export const getWeatherByCurrentLocation = () => {
   }
 } 
 
+export const getFromLocalStorage = () => {
+  return {
+    type: GET_CITIES_FROM_LOCAL_STORAGE
+  }
+}
+
 function * fetchWeatherSaga(action) {
   const {name} = action.payload
   try {
     const weather = yield fetchWeatherByName(name)
 
+    saveCity(weather.id)
+
     yield put({
-      type: FETCH_WEATHER_SUCCESS,
+      type: FETCH_WEATHER_CITY_SUCCESS,
       payload: {
         weather,
         name
@@ -85,7 +103,7 @@ function * getLocationSaga(action) {
     const weather = yield fetchWeatherByCoordinates(location)
     
     yield put({
-      type: FETCH_WEATHER_SUCCESS,
+      type: FETCH_WEATHER_CITY_SUCCESS,
       payload: {
         weather,
         name: weather.name
@@ -97,9 +115,37 @@ function * getLocationSaga(action) {
   }
 }
 
+function * getCitiesFromLocalStorage(action) {
+  try {
+    const cities = getCities()
+    yield put({
+      type: FETCH_WEATHER_CITIES_REQUEST
+    })
+
+    const weathers = yield fetchWeatherByIds(cities)
+    const payload = weathers.list.reduce((result, weather) => {
+      result[weather.name] = {
+        name: weather.name,
+        weather
+      }
+      
+      return result
+    }, {})
+
+    yield put({
+      type: FETCH_WEATHER_CITIES_SUCCESS,
+      payload
+    })
+  }
+  catch (e) {
+    console.error(e)
+  }
+}
+
 export const saga = function * () {
   yield all([
-    takeEvery(FETCH_WEATHER_REQUEST, fetchWeatherSaga),
-    takeEvery(GET_LOCATION_START, getLocationSaga)
+    takeEvery(FETCH_WEATHER_CITY_REQUEST, fetchWeatherSaga),
+    takeEvery(GET_LOCATION_START, getLocationSaga),
+    takeEvery(GET_CITIES_FROM_LOCAL_STORAGE, getCitiesFromLocalStorage)
   ])
 }
