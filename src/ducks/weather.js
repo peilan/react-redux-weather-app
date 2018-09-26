@@ -7,16 +7,24 @@ import {getCities, saveCity} from './localStorage'
 
 export const moduleName = 'weather'
 
+
+/**
+ * Models
+ */
 const ReducerState = Record({
   entities: new OrderedMap({}),
   loading: false
 })
-
+// TODO: more names...
 const CityRecord = Record({
   name: null,
   weather: {}
 })
 
+
+/**
+ * Constants
+ */
 export const DELETE_CITY = `${appName}/${moduleName}/DELETE_CITY`
 export const FETCH_WEATHER_CITY_REQUEST = `${appName}/${moduleName}/FETCH_WEATHER_CITY_REQUEST`
 export const FETCH_WEATHER_CITY_SUCCESS = `${appName}/${moduleName}/FETCH_WEATHER_CITY_SUCCESS`
@@ -27,8 +35,16 @@ export const GET_LOCATION_END = `${appName}/${moduleName}/GET_LOCATION_END`
 export const GET_CITIES_FROM_LOCAL_STORAGE = `${appName}/${moduleName}/GET_CITIES_FROM_LOCAL_STORAGE`
 
 
+/**
+ * Selectors
+ */
 export const citiesSelector = state => state[moduleName].entities.valueSeq().toJS()
+export const loadingSelector = state => state[moduleName].loading 
 
+
+/**
+ * Reducer
+ */
 export default function reducer(state = new ReducerState(), action) {
   const {type, payload} = action
 
@@ -51,6 +67,10 @@ export default function reducer(state = new ReducerState(), action) {
   } 
 }
 
+
+/**
+ * Actions
+ */
 export const addCity = ({name}) => {
   return {
     type: FETCH_WEATHER_CITY_REQUEST,
@@ -77,6 +97,10 @@ export const getFromLocalStorage = () => {
   }
 }
 
+
+/**
+ * Sagas
+ */
 function * fetchWeatherSaga(action) {
   const {name} = action.payload
   try {
@@ -124,6 +148,7 @@ function * getCitiesFromLocalStorage(action) {
 
     const weathers = yield fetchWeatherByIds(cities)
     const payload = weathers.list.reduce((result, weather) => {
+      // TODO: more names...
       result[weather.name] = {
         name: weather.name,
         weather
