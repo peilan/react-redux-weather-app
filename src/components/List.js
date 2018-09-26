@@ -5,7 +5,7 @@ import {citiesSelector, deleteCity} from '../ducks/weather'
 class List extends Component {
   renderCity(city) {
     return <div>
-      {city.name}
+      {city.name}: {parseInt(city.weather.main.temp - 273, 10)}
       <button onClick={() => this.props.deleteCity(city.name)}>delete</button>
     </div>
   }

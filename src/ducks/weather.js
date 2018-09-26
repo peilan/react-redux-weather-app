@@ -1,5 +1,8 @@
 import {appName} from '../config' 
 import {Record, OrderedMap} from 'immutable'
+import { fetchWeather } from './api';
+
+export const moduleName = 'weather'
 
 const ReducerState = Record({
   entities: new OrderedMap({}),
@@ -11,10 +14,10 @@ const CityRecord = Record({
   weather: {}
 })
 
-export const moduleName = 'weather'
-
 export const ADD_CITY = `${appName}/${moduleName}/ADD_CITY`
 export const DELETE_CITY = `${appName}/${moduleName}/DELETE_CITY`
+export const FETCH_WEATHER_REQUEST = `${appName}/${moduleName}/FETCH_WEATHER_REQUEST`
+export const FETCH_WEATHER_SUCCESS = `${appName}/${moduleName}/FETCH_WEATHER_SUCCESS`
 
 export const citiesSelector = state => state[moduleName].entities.valueSeq().toJS()
 
@@ -31,16 +34,26 @@ export default function reducer(state = new ReducerState(), action) {
   } 
 }
 
-export function addCity(city) {
-  return {
-    type: ADD_CITY,
-    payload: city
+export function addCity({name}) {
+  return dispatch => {
+    fetchWeather(name).then(weather => {
+      dispatch({
+        type: ADD_CITY,
+        payload: {
+          name,
+          weather
+        }
+      })
+    })
+    .catch(err => {
+      console.error(err)
+    })
   }
 }
 
-export function deleteCity(city) {
+export function deleteCity(name) {
   return {
     type: DELETE_CITY,
-    payload: city
+    payload: name
   }
 }
