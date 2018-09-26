@@ -5,8 +5,8 @@ import {citiesSelector, deleteCity} from '../ducks/weather'
 class List extends Component {
   renderCity(city) {
     return <div>
-      {city}
-      <button onClick={() => this.props.deleteCity(city)}>delete</button>
+      {city.name}
+      <button onClick={() => this.props.deleteCity(city.name)}>delete</button>
     </div>
   }
 
@@ -15,7 +15,7 @@ class List extends Component {
       return (<div>
         <h2>City list</h2>
         <ul>
-          {this.props.cities.map(city => <li key={city}>{this.renderCity(city)}</li>)}
+          {this.props.cities.map(city => <li key={city.name}>{this.renderCity(city)}</li>)}
         </ul>
       </div>)
     return null

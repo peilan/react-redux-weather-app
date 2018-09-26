@@ -10,7 +10,7 @@ class CityAdding extends Component {
 
   addClicked() {
     const city = this.input.current.value
-    this.props.addCity(city)
+    this.props.addCity({name: city})
     this.input.current.value = ''
   }
 
