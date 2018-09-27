@@ -21,8 +21,11 @@ const Temperature = styled.div`
   width: 30px;
   text-align: center;
 `
-const Delete = styled.a`
-  width: 15px;
+const Delete = styled.div`
+  width: 30px;
+  text-align: center; 
+  cursor: pointer;
+  color: #801717
 `
 class List extends Component {
   renderCity(city) {
@@ -32,7 +35,7 @@ class List extends Component {
       <Name>{city.name}</Name>
       <Image src={`https://openweathermap.org/img/w/${icon}.png`} /> 
       <Temperature>{temperature}</Temperature>
-      <Delete href="#"><FaTrashAlt/></Delete>
+      <Delete onClick={() => this.props.deleteCity(city.name)} href="#"><FaTrashAlt/></Delete>
     </City>);
   }
 
