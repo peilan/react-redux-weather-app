@@ -1,4 +1,5 @@
 import React, {Component} from 'react'
+import PropTypes from 'prop-types';
 import CityAdding from './CityAdding'
 import List from './List'
 import {connect} from 'react-redux'
@@ -24,6 +25,11 @@ class Root extends Component {
       </div>
     );
   }
+}
+
+Root.propTypes = {
+  getFromLocalStorage: PropTypes.func.isRequired,
+  getWeatherByCurrentLocation: PropTypes.func.isRequired
 }
 
 export default connect(null, {

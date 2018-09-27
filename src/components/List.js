@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {connect} from 'react-redux'
 import {citiesSelector, loadingSelector, deleteCity} from '../ducks/weather'
 import Loading from './Loading' 
@@ -54,6 +55,11 @@ class List extends Component {
 
     return null
   }
+}
+
+List.propTypes = {
+  cities: PropTypes.array.isRequired,
+  loading: PropTypes.bool.isRequired
 }
 
 export default connect(state => ({

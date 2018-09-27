@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {connect} from 'react-redux'
 import {addCity} from '../ducks/weather'
 
@@ -23,6 +24,10 @@ class CityAdding extends Component {
       </div>
     );
   }
+}
+
+CityAdding.propTypes = {
+  addCity: PropTypes.func.isRequired
 }
 
 export default connect(null, {addCity})(CityAdding)
