@@ -16,7 +16,7 @@ class Root extends Component {
   render() {
     return (
       <div>
-        <h1>Weather application!</h1>
+        <h1>Weather application</h1>
         <br/>
         <CityAdding />
         <br/>
