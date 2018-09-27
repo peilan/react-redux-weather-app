@@ -139,7 +139,7 @@ function * getLocationSaga(action) {
   }
 }
 
-function * getCitiesFromLocalStorage(action) {
+function * getCitiesFromLocalStorageSaga(action) {
   try {
     const cities = getCities()
     yield put({
@@ -171,6 +171,6 @@ export const saga = function * () {
   yield all([
     takeEvery(FETCH_WEATHER_CITY_REQUEST, fetchWeatherSaga),
     takeEvery(GET_LOCATION_START, getLocationSaga),
-    takeEvery(GET_CITIES_FROM_LOCAL_STORAGE, getCitiesFromLocalStorage)
+    takeEvery(GET_CITIES_FROM_LOCAL_STORAGE, getCitiesFromLocalStorageSaga)
   ])
 }
